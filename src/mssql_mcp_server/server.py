@@ -7,12 +7,16 @@ from mcp.server import Server
 from mcp.types import Resource, Tool, TextContent
 from pydantic import AnyUrl
 
+
+print("RUNNING LOCAL CODE") 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("mssql_mcp_server")
+
+logger.info("=== RUNNING LOCAL CODE: SANITY CHECK ===")
 
 def validate_table_name(table_name: str) -> str:
     """Validate and escape table name to prevent SQL injection."""
@@ -104,6 +108,8 @@ app = Server("mssql_mcp_server")
 async def list_resources() -> list[Resource]:
     """List SQL Server tables as resources."""
     config = get_db_config()
+    config.pop("encrypt", None)
+    logger.info(f"Config just before connect: {config}")
     try:
         conn = pymssql.connect(**config)
         cursor = conn.cursor()
@@ -137,6 +143,8 @@ async def list_resources() -> list[Resource]:
 async def read_resource(uri: AnyUrl) -> str:
     """Read table contents."""
     config = get_db_config()
+    config.pop("encrypt", None)
+    logger.info(f"Config just before connect: {config}")
     uri_str = str(uri)
     logger.info(f"Reading resource: {uri_str}")
     
@@ -168,6 +176,9 @@ async def read_resource(uri: AnyUrl) -> str:
 @app.list_tools()
 async def list_tools() -> list[Tool]:
     """List available SQL Server tools."""
+    config = get_db_config()
+    config.pop("encrypt", None)
+    logger.info(f"Config just before connect: {config}")
     command = get_command()
     logger.info("Listing tools...")
     return [
@@ -191,6 +202,8 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     """Execute SQL commands."""
     config = get_db_config()
+    config.pop("encrypt", None)
+    logger.info(f"Config just before connect: {config}")
     command = get_command()
     logger.info(f"Calling tool: {name} with arguments: {arguments}")
     
